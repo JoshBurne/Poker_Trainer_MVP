@@ -5,6 +5,7 @@ from logic.deal import deal_hand
 from state.session import init_session_state
 from strategy.rfi_chart import get_hand_code, is_in_rfi_range, RFI_CHART
 from lessons.lesson_registry import LESSON_REGISTRY
+from utils.positions import get_position_name
 
 
 # ----------------------------
@@ -16,6 +17,21 @@ init_session_state()
 # Title
 # ----------------------------
 st.title("🃏 Poker Pre-Flop Trainer")
+
+lesson_names = list(LESSON_REGISTRY.keys())
+
+st.sidebar.header("📚 Select a Lesson")
+selected_lesson_name = st.sidebar.selectbox("Choose a lesson:", ["None"] + lesson_names)
+
+st.session_state.selected_lesson = selected_lesson_name if selected_lesson_name != "None" else None
+
+# ----------------------------
+# If a lesson is selected, run its logic
+# ----------------------------
+if st.session_state.selected_lesson:
+    selected_lesson = LESSON_REGISTRY[st.session_state.selected_lesson]()
+    selected_lesson.run()
+    st.stop()  # Prevent rest of UI from loading
 
 # ----------------------------
 # Deal new hand manually
@@ -33,19 +49,6 @@ if st.button("Deal New Hand") or st.session_state.get("reset_next"):
 # ----------------------------
 # Display hand + UI
 # ----------------------------
-def get_position_name(pos_id):
-    position_map = {
-        1: "Button (BTN)",
-        2: "Small Blind (SB)",
-        3: "Big Blind (BB)",
-        4: "Under The Gun (UTG)",
-        5: "Under The Gun +1 (UTG+1)",
-        6: "Under The Gun +2 (UTG+2)",
-        7: "Lojack (LJ)",
-        8: "Hijack (HJ)",
-        9: "Cutoff (CO)"
-    }
-    return position_map.get(pos_id, "Unknown")
 
 if st.session_state.hand:
     pos_name = get_position_name(st.session_state.position)

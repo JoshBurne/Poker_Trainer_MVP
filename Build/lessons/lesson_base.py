@@ -1,6 +1,13 @@
 # lessons/lesson_base.py
 
 class Lesson:
+    def __init__(self):
+        pass
+
+    def run(self):
+        raise NotImplementedError("Each lesson must implement a run()  method.")
+    
+    
     def get_prompt(self):
         """Returns the text that prompts the user for input."""
         raise NotImplementedError

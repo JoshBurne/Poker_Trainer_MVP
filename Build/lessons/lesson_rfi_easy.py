@@ -2,7 +2,10 @@
 
 import random
 from lessons.lesson_base import Lesson
-from strategy.rfi_chart import get_hand_code, is_in_rfi_range, get_position_name
+from strategy.rfi_chart import get_hand_code, is_in_rfi_range
+from utils.positions import get_position_name
+from logic.deal import deal_deck
+
 
 class EasyRFILesson(Lesson):
     def get_prompt(self):
