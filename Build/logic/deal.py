@@ -20,7 +20,7 @@ def deal_hand(num_opponents=0):
     - opponents: list of N opponent hands (each 2 cards)
     - flop, turn, river
     """
-    deck = initialize_deck()
+    deck = deal_deck()
     result = {}
 
     result["player"], deck = deal_cards(deck, 2)
