@@ -4,6 +4,7 @@ import random
 from logic.deal import deal_hand
 from state.session import init_session_state
 from strategy.rfi_chart import get_hand_code, is_in_rfi_range, RFI_CHART
+from lessons.lesson_registry import LESSON_REGISTRY
 
 
 # ----------------------------
