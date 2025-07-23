@@ -3,6 +3,8 @@ import random
 
 from logic.deal import deal_hand
 from state.session import init_session_state
+from strategy.rfi_chart import get_hand_code, is_in_rfi_range, RFI_CHART
+
 
 # ----------------------------
 # Init session
@@ -58,26 +60,73 @@ if st.session_state.hand:
 
         if st.button("Submit Action"):
             st.session_state.action_submitted = True
+
+            card1, card2 = st.session_state.hand["player"]
+            hand_code = get_hand_code(card1, card2)
+            pos_name = get_position_name(st.session_state.position)
+
             if st.session_state.selected_action == "Fold":
                 st.session_state.folded = True
                 st.session_state.show_flop = False
-                st.session_state.submission_message = "🗑️ You folded. Click 'Next Hand' to continue."
-            else:
+
+                if pos_name in RFI_CHART and is_in_rfi_range(pos_name, hand_code):
+                    st.session_state.submission_message = (
+                        f"❌ {hand_code} is a hand you should raise from {pos_name}. Folding is a mistake."
+                    )
+                else:
+                    st.session_state.submission_message = (
+                        f"✅🗑️ You folded. {hand_code} is not in the recommended range from {pos_name}."
+                    )
+
+            elif st.session_state.selected_action == "Raise":
                 st.session_state.folded = False
                 st.session_state.show_flop = True
-                st.session_state.submission_message = f"✅ You chose to {st.session_state.selected_action}."
+
+                if pos_name in RFI_CHART:
+                    if is_in_rfi_range(pos_name, hand_code):
+                        st.session_state.submission_message = (
+                            f"✅ Good raise! {hand_code} is in the RFI range for {pos_name}."
+                        )
+                    else:
+                        st.session_state.submission_message = (
+                            f"❌ {hand_code} is not a recommended raise from {pos_name}."
+                        )
+                else:
+                    st.session_state.submission_message = (
+                        f"ℹ️ {pos_name} is not a raising position in RFI charts. Raise strength depends on previous action."
+                    )
+
+            else:  # Call logic
+                st.session_state.folded = False
+                st.session_state.show_flop = True
+                st.session_state.submission_message = f"✅ You chose to Call."
+
             st.rerun()
 
-    elif st.session_state.folded:
-        st.warning(st.session_state.submission_message)
+
+
+
+
+    # Show feedback message in the right color
+    msg = st.session_state.submission_message
+    if "✅" in msg:
+        st.success(msg)
+    elif "❌" in msg:
+        st.error(msg)
+    elif "🗑️" in msg:
+        st.warning(msg)
+    else:
+        st.info(msg)
+
+    # Then continue as normal
+    if st.session_state.folded:
         if st.button("Next Hand"):
             st.session_state.reset_next = True
             st.rerun()
 
     elif st.session_state.show_flop:
-        st.success(st.session_state.submission_message)
         st.subheader("Flop:")
         st.write("🃏 " + " | ".join(st.session_state.hand["flop"]))
 
-else:
-    st.write("Click **Deal New Hand** to begin.")
+    else:
+        st.write("Click **Deal New Hand** to begin.")
